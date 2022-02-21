@@ -5,6 +5,10 @@ TagManager:
   serializedVersion: 2
   tags:
   - Ground
+  - Hitbox
+  - Enemy
+  - Bullet
+  - Wall
   layers:
   - Default
   - TransparentFX
@@ -12,12 +16,12 @@ TagManager:
   - 
   - Water
   - UI
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
+  - PlayerHitbox
+  - Player
+  - Enemy
+  - Ground
+  - Bullet
+  - EnemyHitbox
   - 
   - 
   - 
