@@ -12,7 +12,7 @@ public class enemy : MonoBehaviour
     [SerializeField] public int currentHealth;
     [Header("Other")]
     private Rigidbody2D rb;
-    private Animator anim;
+    public Animator anim;
     public HPRecover HPR;
     #endregion
 

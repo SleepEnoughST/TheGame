@@ -4,13 +4,15 @@ using UnityEngine;
 
 public class HotZoneCheck : MonoBehaviour
 {
-    private enemy enemyParent;
+    public enemy enemyParent;
+    public EnemyStandby enemy;
     private bool inRange;
     private Animator anim;
 
     private void Awake()
     {
         enemyParent = GetComponentInParent<enemy>();
+        enemy = GetComponentInParent<EnemyStandby>();
         anim = GetComponentInParent<Animator>();
     }
 
@@ -27,6 +29,10 @@ public class HotZoneCheck : MonoBehaviour
         if (collision.gameObject.CompareTag("Player"))
         {
             inRange = true;
+            enemy.GetComponent<EnemyStandby>().enabled = false;
+            enemyParent.GetComponent<enemy>().enabled = true;
+            enemy.GetComponent<EnemyStandby>().standTime = 0;
+            enemy.GetComponent<EnemyStandby>().standbyCooldown = 6;
         }
     }
 
@@ -39,6 +45,7 @@ public class HotZoneCheck : MonoBehaviour
             enemyParent.triggerArea.SetActive(true);
             enemyParent.inRange = false;
             enemyParent.SelectTarget();
+            enemy.GetComponent<EnemyStandby>().enabled = true;
         }
     }
 }

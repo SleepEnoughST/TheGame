@@ -46,8 +46,8 @@ public class Player_Controller : MonoBehaviour
     [SerializeField] private EnergyBar energyBar;
     [SerializeField] private SkillCooldown SC;
     [Header("other")]
-    private Rigidbody2D rb;
-    private Animator anim;
+    public Rigidbody2D rb;
+    public Animator anim;
 
     private void Start()
     {
@@ -103,9 +103,17 @@ public class Player_Controller : MonoBehaviour
             anim.SetBool("attack", true);
             hitbox.SetActive(true);
             this.gameObject.GetComponent<Player_Controller>().playerSpeed = 0;
-            rb.velocity = new Vector2(0, rb.velocity.y);
-            attackCooldown = 1.2f;
+            attackCooldown = 1f;
             isAttacking = true;
+            if (!IsGrounded)
+            {
+                rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y);
+            }
+            else
+            {
+                rb.velocity = new Vector2(0, rb.velocity.y);
+            }
+            
             this.gameObject.GetComponent<Player_Controller>().enabled = false;
 
             yield return new WaitForSeconds(1.2f);
@@ -114,8 +122,9 @@ public class Player_Controller : MonoBehaviour
             anim.SetBool("attack", false);
             this.gameObject.GetComponent<Player_Controller>().playerSpeed = 10f;
             hitbox.SetActive(false);
+
         }
-        else if (attackCooldown > 0)
+        if (attackCooldown > 0)
             attackCooldown -= Time.deltaTime;
 
         //»·µ{§ðÀ»
@@ -128,7 +137,7 @@ public class Player_Controller : MonoBehaviour
             yield return new WaitForSeconds(0.5f);
             isRangedAttacking = false;
         }
-        else if (rangeAttackCooldown > 0)
+        if (rangeAttackCooldown > 0)
             rangeAttackCooldown -= Time.deltaTime;
     }
 
@@ -174,6 +183,7 @@ public class Player_Controller : MonoBehaviour
         {
             IsGrounded = true;
             jumpCount = 0;
+            rb.velocity = new Vector2(0, rb.velocity.y);
         }
 
         if (collision.gameObject.name == "Enemy")
