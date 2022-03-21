@@ -15,6 +15,11 @@ public class Player_Controller : MonoBehaviour
     public PhysicsMaterial2D PM2D;
     public Slider slider;
     public bool facingright = true;
+    public bool wallJump;
+    public bool doubleJump;
+    public float wallJumpForce;
+    public float wallJumpTime;
+    public float startWallJumpTime;
     [SerializeField] private int jumpCount = 0;
     [Header("Attack")]
     [SerializeField] private float attackCooldown;
@@ -58,20 +63,29 @@ public class Player_Controller : MonoBehaviour
     {
         Move();
 
+        Dash();
+        StartCoroutine(Attack());
     }
 
     private void Update()
     {
         Jump();
-        StartCoroutine(Attack());
-        Dash();
         StartCoroutine(Die());
         if (IsGrounded)
             onTheWall = false;
 
         if (slider.value <= 1)
             slider.value += Time.deltaTime;
+        OnTheWall();
+        if (!isAttacking && Time.fixedDeltaTime <= 0.02f)
+        {
+            Time.fixedDeltaTime += Time.deltaTime;
+            Time.fixedDeltaTime = Mathf.Clamp(Time.fixedDeltaTime, 0f, 0.02f);
+        }
+
+        rb.gravityScale = Mathf.Clamp(rb.gravityScale, 0f, 3f);
     }
+
 
     private void Move()
     {
@@ -102,19 +116,19 @@ public class Player_Controller : MonoBehaviour
             this.gameObject.GetComponent<Player_Controller>().playerSpeed = 0;
             attackCooldown = 1f;
             isAttacking = true;
-            SM.DoSlowmotion();
+            //SM.DoSlowmotion();
             if (IsGrounded)
             {
                 rb.velocity = new Vector2(0, rb.velocity.y);
             }
             
-            this.gameObject.GetComponent<Player_Controller>().enabled = false;
+            //this.gameObject.GetComponent<Player_Controller>().enabled = false;
 
             yield return new WaitForSeconds(1.2f);
             isAttacking = false;
             this.gameObject.GetComponent<Player_Controller>().enabled = true;
             anim.SetBool("attack", false);
-            this.gameObject.GetComponent<Player_Controller>().playerSpeed = 10f;
+            this.gameObject.GetComponent<Player_Controller>().playerSpeed = 6f;
             hitbox.SetActive(false);
 
         }
@@ -137,20 +151,32 @@ public class Player_Controller : MonoBehaviour
 
     private void Jump()
     {
-        if (rb.gravityScale <= 3)
-        {
-            rb.gravityScale += Time.deltaTime;
-            rb.gravityScale = Mathf.Clamp(rb.gravityScale, 0f, 3f);
-        }
-        if (IsGrounded == true && !isJumping)
+        //if (rb.gravityScale <= 3)
+        //{
+        //    rb.gravityScale += Time.deltaTime;
+        //    rb.gravityScale = Mathf.Clamp(rb.gravityScale, 0f, 3f);
+        //}
+        if (IsGrounded == true)
         {
             if (Input.GetKeyDown(KeyCode.Z))
             {
-                rb.AddForce(Vector2.up * playerJump);
+                rb.AddForce(Vector2.up * playerJump, ForceMode2D.Impulse);
                 IsGrounded = false;
                 isJumping = true;
                 jumpCount++;
+                doubleJump = true;
                 
+            }
+        }
+        else if (jumpCount <= 1 && doubleJump)
+        {
+            if (Input.GetKeyDown(KeyCode.Z))
+            {
+                rb.velocity = new Vector2(rb.velocity.x, 0);
+                rb.AddForce(Vector2.up * playerJump, ForceMode2D.Impulse);
+                isJumping = true;
+                jumpCount++;
+                doubleJump = false;
             }
         }
 
@@ -158,41 +184,44 @@ public class Player_Controller : MonoBehaviour
         {
             if (Input.GetKeyDown(KeyCode.Z))
             {
-                rb.gravityScale = 3f;
-
+                //rb.gravityScale = 3f;
+                wallJump = true;
                 jumpCount++;
                 onTheWall = false;
                 isJumping = true;
 
-                if (gameObject.GetComponent<Transform>().rotation.y >= 0)
+                
+                rb.AddForce(Vector2.up * 15, ForceMode2D.Impulse);
+            }
+        }
+        else if (wallJump)
+        {
+            
+            if (gameObject.transform.rotation.y >= 0)
+            {
+                if (wallJumpTime <= 0)
                 {
-                    if (dashTime <= 0)
-                    {
-                        dashTime = startDashTime;
-                    }
-                    else
-                    {
-                        dashTime -= Time.deltaTime;
-                        rb.AddForce(Vector2.left * dashSpeed, ForceMode2D.Force);
-                    }
+                    wallJump = false;
+                    wallJumpTime = startWallJumpTime;
                 }
                 else
                 {
-                    if (dashTime <= 0)
-                    {
-                        dashTime = startDashTime;
-                    }
-                    else
-                    {
-                        dashTime -= Time.deltaTime;
-                        rb.AddForce(Vector2.right * dashSpeed, ForceMode2D.Force);
-                    }
+                    wallJumpTime -= Time.deltaTime;
+                    rb.AddForce(Vector2.left * wallJumpForce, ForceMode2D.Force);
                 }
-                rb.AddForce(Vector2.up * 15, ForceMode2D.Impulse);
             }
-            else if (Input.GetKey(KeyCode.Z)) 
+            else
             {
-                rb.gravityScale = 3f;
+                if (wallJumpTime <= 0)
+                {
+                    wallJump = false;
+                    wallJumpTime = startWallJumpTime;
+                }
+                else
+                {
+                    wallJumpTime -= Time.deltaTime;
+                    rb.AddForce(Vector2.right * wallJumpForce, ForceMode2D.Force);
+                }
             }
         }
         anim.SetBool("jump", !IsGrounded);
@@ -211,6 +240,7 @@ public class Player_Controller : MonoBehaviour
                 rb.velocity = new Vector2(0, rb.velocity.y);
             }
             isJumping = false;
+            doubleJump = false;
         }
 
         if (collision.gameObject.name == "Enemy")
@@ -224,14 +254,11 @@ public class Player_Controller : MonoBehaviour
         if (collision.gameObject.tag == "Wall")
         {
             onTheWall = true;
+            doubleJump = false;
             isJumping = false;
-            gameObject.GetComponent<Rigidbody2D>().gravityScale = 0f;
+            rb.gravityScale = 0;
             rb.velocity = Vector2.zero;
 
-        }
-        else if (collision.gameObject == null)
-        {
-            gameObject.GetComponent<Rigidbody2D>().gravityScale = 3f;
         }
     }
 
@@ -240,6 +267,10 @@ public class Player_Controller : MonoBehaviour
         if (collision.gameObject.tag == "Wall")
         {
             onTheWall = false;
+        }
+        if (collision.gameObject.tag == "Ground")
+        {
+            IsGrounded = false;
         }
     }
 
@@ -284,10 +315,14 @@ public class Player_Controller : MonoBehaviour
         //    SC.GetComponent<SkillCooldown>().slider.value += Time.deltaTime;
         if (direction == 0)
         {
-            if (gameObject.GetComponent<Transform>().rotation.y < 0 && Input.GetKeyDown(KeyCode.C) && slider.value >= 1)
+            if (gameObject.transform.rotation.y < 0 && Input.GetKeyDown(KeyCode.C) && slider.value >= 1)
+            {
                 direction = 1;
-            else if (gameObject.GetComponent<Transform>().rotation.y >= 0 && Input.GetKeyDown(KeyCode.C) && slider.value >= 1)
+            }
+            else if (gameObject.transform.rotation.y >= 0 && Input.GetKeyDown(KeyCode.C) && slider.value >= 1)
+            {
                 direction = 2;
+            }
         }
         else
         {
@@ -352,5 +387,16 @@ public class Player_Controller : MonoBehaviour
             this.gameObject.SetActive(false);
         }
 
+    }
+
+    void OnTheWall()
+    {
+        if (onTheWall && rb.gravityScale <= 3f)
+        {
+            //yield return new WaitForSeconds(1f);
+            rb.gravityScale += Time.deltaTime;
+        }
+        else
+            rb.gravityScale = 3f;
     }
 }

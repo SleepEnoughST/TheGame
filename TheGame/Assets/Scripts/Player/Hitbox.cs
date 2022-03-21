@@ -13,7 +13,7 @@ public class Hitbox : MonoBehaviour
         {
             collision.gameObject.GetComponent<enemy>().TakeDamage(20);
             print("hit¡I");
-            energyBar.GetComponent<EnergyBar>().increaseEnergy(10);
+            energyBar.increaseEnergy(10);
             HPR.GetComponent<HPRecover>().slider.value += 10f;
         }
     }

@@ -9,8 +9,13 @@ public class SlowMotion : MonoBehaviour
 
     void Update()
     {
-        Time.timeScale += (1f / slowdownLength) * Time.unscaledDeltaTime / 2;
-        Time.timeScale = Mathf.Clamp(Time.timeScale, 0f, 1f);
+        Time.timeScale += (1f / slowdownLength) * (Time.unscaledDeltaTime / 2);
+        Time.timeScale = Mathf.Clamp(Time.timeScale, 0, 1f);
+        //if (Time.fixedDeltaTime <= 0.02f)
+        //{
+        //    Time.fixedDeltaTime += Time.deltaTime;
+        //    Time.fixedDeltaTime = Mathf.Clamp(Time.fixedDeltaTime, 0f, 0.02f);
+        //}
     }
 
     public void DoSlowmotion()
