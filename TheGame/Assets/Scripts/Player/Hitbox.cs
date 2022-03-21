@@ -6,6 +6,7 @@ public class Hitbox : MonoBehaviour
 {
     public EnergyBar energyBar;
     public HPRecover HPR;
+    public SlowMotion SM;
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.gameObject.tag == "Enemy")

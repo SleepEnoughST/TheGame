@@ -13,12 +13,5 @@ public class OnRope : MonoBehaviour
         }
         
     }
-    private void OnTriggerExit2D(Collider2D collision)
-    {
-        if (collision.gameObject.tag == "Player")
-        {
-            collision.gameObject.GetComponent<Player_Controller>().enabled = true;
-            collision.gameObject.GetComponent<Slide>().enabled = false;
-        }
-    }
+
 }

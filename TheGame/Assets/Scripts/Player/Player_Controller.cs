@@ -14,8 +14,7 @@ public class Player_Controller : MonoBehaviour
     public bool onTheWall = false;
     public PhysicsMaterial2D PM2D;
     public Slider slider;
-    [SerializeField] private bool evolution;
-    [SerializeField] private bool facingright = true;
+    public bool facingright = true;
     [SerializeField] private int jumpCount = 0;
     [Header("Attack")]
     [SerializeField] private float attackCooldown;
@@ -38,13 +37,11 @@ public class Player_Controller : MonoBehaviour
     [Header("HP")]
     [SerializeField] private int maxHealth = 100;
     [SerializeField] private int currentHealth;
-    [Header("Energy")]
-    [SerializeField] private int energy;
     [Header("C# Scripts")]
     [SerializeField] private HPBar hPBar;
-    [SerializeField] private Player_Controller player;
     [SerializeField] private EnergyBar energyBar;
-    [SerializeField] private SkillCooldown SC;
+    public SlowMotion SM;
+    public Gun gun;
     [Header("other")]
     public Rigidbody2D rb;
     public Animator anim;
@@ -65,9 +62,9 @@ public class Player_Controller : MonoBehaviour
 
     private void Update()
     {
-        StartCoroutine(Jump());
+        Jump();
         StartCoroutine(Attack());
-        StartCoroutine(Dash());
+        Dash();
         StartCoroutine(Die());
         if (IsGrounded)
             onTheWall = false;
@@ -78,8 +75,8 @@ public class Player_Controller : MonoBehaviour
 
     private void Move()
     {
-        float move = Input.GetAxis("Horizontal");
-        //print(move);
+        float move = Input.GetAxisRaw("Horizontal");
+        print(move);
         rb.velocity = new Vector2(playerSpeed * move, rb.velocity.y);
         anim.SetBool("move", move != 0);
 
@@ -105,11 +102,8 @@ public class Player_Controller : MonoBehaviour
             this.gameObject.GetComponent<Player_Controller>().playerSpeed = 0;
             attackCooldown = 1f;
             isAttacking = true;
-            if (!IsGrounded)
-            {
-                rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y);
-            }
-            else
+            SM.DoSlowmotion();
+            if (IsGrounded)
             {
                 rb.velocity = new Vector2(0, rb.velocity.y);
             }
@@ -141,9 +135,14 @@ public class Player_Controller : MonoBehaviour
             rangeAttackCooldown -= Time.deltaTime;
     }
 
-    IEnumerator Jump()
+    private void Jump()
     {
-        if (IsGrounded == true)
+        if (rb.gravityScale <= 3)
+        {
+            rb.gravityScale += Time.deltaTime;
+            rb.gravityScale = Mathf.Clamp(rb.gravityScale, 0f, 3f);
+        }
+        if (IsGrounded == true && !isJumping)
         {
             if (Input.GetKeyDown(KeyCode.Z))
             {
@@ -151,27 +150,50 @@ public class Player_Controller : MonoBehaviour
                 IsGrounded = false;
                 isJumping = true;
                 jumpCount++;
-                yield return new WaitForSeconds(0.5f);
-                isJumping = false;
+                
             }
         }
 
-        if (IsGrounded == false && onTheWall == true)
+        if (IsGrounded == false && onTheWall == true && !isJumping && jumpCount <= 2)
         {
             if (Input.GetKeyDown(KeyCode.Z))
             {
-                rb.velocity = new Vector2(rb.velocity.x * 5, 15);
-                rb.AddForce(Vector2.right * playerJump, ForceMode2D.Impulse);
+                rb.gravityScale = 3f;
+
                 jumpCount++;
                 onTheWall = false;
-                this.gameObject.GetComponent<Rigidbody2D>().gravityScale = 1;
                 isJumping = true;
-                yield return new WaitForSeconds(0.1f);
-                isJumping = false;
+
+                if (gameObject.GetComponent<Transform>().rotation.y >= 0)
+                {
+                    if (dashTime <= 0)
+                    {
+                        dashTime = startDashTime;
+                    }
+                    else
+                    {
+                        dashTime -= Time.deltaTime;
+                        rb.AddForce(Vector2.left * dashSpeed, ForceMode2D.Force);
+                    }
+                }
+                else
+                {
+                    if (dashTime <= 0)
+                    {
+                        dashTime = startDashTime;
+                    }
+                    else
+                    {
+                        dashTime -= Time.deltaTime;
+                        rb.AddForce(Vector2.right * dashSpeed, ForceMode2D.Force);
+                    }
+                }
+                rb.AddForce(Vector2.up * 15, ForceMode2D.Impulse);
             }
-            yield return new WaitForSeconds(0.2f);
-            onTheWall = false;
-            this.gameObject.GetComponent<Rigidbody2D>().gravityScale = 3;
+            else if (Input.GetKey(KeyCode.Z)) 
+            {
+                rb.gravityScale = 3f;
+            }
         }
         anim.SetBool("jump", !IsGrounded);
     }
@@ -181,9 +203,14 @@ public class Player_Controller : MonoBehaviour
     {
         if (collision.gameObject.tag == "Ground")
         {
+            rb.gravityScale = 3f;
             IsGrounded = true;
             jumpCount = 0;
-            rb.velocity = new Vector2(0, rb.velocity.y);
+            if (this.gameObject.GetComponent<AutoWalk>().enabled == false)
+            {
+                rb.velocity = new Vector2(0, rb.velocity.y);
+            }
+            isJumping = false;
         }
 
         if (collision.gameObject.name == "Enemy")
@@ -194,15 +221,33 @@ public class Player_Controller : MonoBehaviour
         if (collision.gameObject.tag == "Trap")
             TakeDamage(10);
 
-        if (collision.gameObject.tag == "Evolution")
-        {
-            evolution = true;
-            //anim.SetBool("evolution", evolution = true);
-        }
-
         if (collision.gameObject.tag == "Wall")
         {
             onTheWall = true;
+            isJumping = false;
+            gameObject.GetComponent<Rigidbody2D>().gravityScale = 0f;
+            rb.velocity = Vector2.zero;
+
+        }
+        else if (collision.gameObject == null)
+        {
+            gameObject.GetComponent<Rigidbody2D>().gravityScale = 3f;
+        }
+    }
+
+    private void OnCollisionExit2D(Collision2D collision)
+    {
+        if (collision.gameObject.tag == "Wall")
+        {
+            onTheWall = false;
+        }
+    }
+
+    private void OnTriggerStay2D(Collider2D collision)
+    {
+        if (collision.gameObject.CompareTag("Grab"))
+        {
+            this.gameObject.GetComponent<Player_Controller>().enabled = false;
         }
     }
 
@@ -215,7 +260,7 @@ public class Player_Controller : MonoBehaviour
     }
 
     //¤@¯ë½Ä¨ë
-    IEnumerator Dash()
+    private void Dash()
     {
         //if (Input.GetKeyDown(KeyCode.C) && dashCooldown <= 0 && superDashCooldown !>= 0 && SC.GetComponent<SkillCooldown>().slider.value == 1)
         //{
@@ -239,9 +284,9 @@ public class Player_Controller : MonoBehaviour
         //    SC.GetComponent<SkillCooldown>().slider.value += Time.deltaTime;
         if (direction == 0)
         {
-            if (Input.GetKey(KeyCode.LeftArrow) && Input.GetKeyDown(KeyCode.C) && slider.value >= 1)
+            if (gameObject.GetComponent<Transform>().rotation.y < 0 && Input.GetKeyDown(KeyCode.C) && slider.value >= 1)
                 direction = 1;
-            else if (Input.GetKey(KeyCode.RightArrow) && Input.GetKeyDown(KeyCode.C) && slider.value >= 1)
+            else if (gameObject.GetComponent<Transform>().rotation.y >= 0 && Input.GetKeyDown(KeyCode.C) && slider.value >= 1)
                 direction = 2;
         }
         else
@@ -263,17 +308,13 @@ public class Player_Controller : MonoBehaviour
                 {
                     rb.AddForce(Vector2.left * dashSpeed, ForceMode2D.Force);
                     slider.value = 0;
-
                 }
 
                 else if (direction == 2)
                 {
                     rb.AddForce(Vector2.right * dashSpeed, ForceMode2D.Force);
                     slider.value = 0;
-                    yield return new WaitForSeconds(0.5f);
-
                 }
-
             }
         }
     }
