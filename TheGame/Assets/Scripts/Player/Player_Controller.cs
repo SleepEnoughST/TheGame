@@ -8,37 +8,45 @@ public class Player_Controller : MonoBehaviour
     //未完成：蹬牆跳、格擋、對話互動
     //動畫：移動、跳躍、居合、格擋、受傷、死亡
 
-    [Header("Player")]
+    [Header("PlayerSpeed")]
     public float playerSpeed;
-    public float playerJump;
     public bool onTheWall = false;
     public PhysicsMaterial2D PM2D;
     public Slider slider;
-    public bool facingright = true;
-    public bool wallJump;
-    public bool doubleJump;
     public float wallJumpForce;
     public float wallJumpTime;
     public float startWallJumpTime;
-    [SerializeField] private int jumpCount = 0;
+    public GameObject PS;
+    public int jumpCount = 0;
     [Header("Attack")]
-    [SerializeField] private float attackCooldown;
-    [SerializeField] private bool isAttacking;
-    [SerializeField] private float rangeAttackCooldown;
-    [SerializeField] private bool isRangedAttacking;
-    [SerializeField] private Transform point;
-    [SerializeField] private GameObject hitbox;
-    [SerializeField] private GameObject bullet;
+    public float attackCooldown;
+    public bool isAttacking;
+    [Header("RangedAttack")]
+    public float rangeAttackCooldown;
+    public bool isRangedAttacking;
+    public Transform point;
+    public GameObject hitbox;
+    public GameObject bullet;
     [Header("Jump")]
-    [SerializeField] private bool isJumping;
-    [Header("Dash & SuperDash")]
+    public float playerJump;
+    public bool isJumping;
+    [Header("Dash")]
     public float dashSpeed;
-    [SerializeField] private float dashTime;
+    private float dashTime;
     public float startDashTime;
-    [SerializeField] private int direction;
+    private int direction;
     public bool isDashing;
+    [Header("SuperDash")]
+    public bool superDashing;
+    private float superDashTime;
+    public float startSuperDashTime;
+    public float superDashSpeed;
+    public float keep;
     [Header("Bool")]
-    [SerializeField] private bool IsGrounded;
+    public bool facingright = true;
+    public bool wallJump;
+    public bool doubleJump;
+    public bool IsGrounded;
     [Header("HP")]
     [SerializeField] private int maxHealth = 100;
     [SerializeField] private int currentHealth;
@@ -84,6 +92,7 @@ public class Player_Controller : MonoBehaviour
         }
 
         rb.gravityScale = Mathf.Clamp(rb.gravityScale, 0f, 3f);
+        SuperDash();
     }
 
 
@@ -160,6 +169,7 @@ public class Player_Controller : MonoBehaviour
         {
             if (Input.GetKeyDown(KeyCode.Z))
             {
+                print("jump");
                 rb.AddForce(Vector2.up * playerJump, ForceMode2D.Impulse);
                 IsGrounded = false;
                 isJumping = true;
@@ -274,9 +284,9 @@ public class Player_Controller : MonoBehaviour
         }
     }
 
-    private void OnTriggerStay2D(Collider2D collision)
+    private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.CompareTag("Grab"))
+        if (collision.gameObject.CompareTag("Grab") && Input.GetKeyDown(KeyCode.E))
         {
             this.gameObject.GetComponent<Player_Controller>().enabled = false;
         }
@@ -355,22 +365,48 @@ public class Player_Controller : MonoBehaviour
     }
 
     //超級衝刺
-    IEnumerator SuperDash()
+    void SuperDash()
     {
-        //if (Input.GetKeyDown(KeyCode.C) && superDashCooldown <= 0)
-        //{
-        //    anim.SetTrigger("superdash");
-        //    superDashCooldown = 5;
-        //    dashCooldown = 1;
-        //    SC.GetComponent<SkillCooldown>().slider.value = 0;
-        //    if (facingright == true)
-        //        rb.AddForce(Vector3.right * superDashPower);
-        //    else
-        //        rb.AddForce(Vector3.right * -superDashPower);
-        //}
-        //else if (superDashCooldown > 0)
-        //    superDashCooldown -= Time.deltaTime;
-        yield return new WaitForSeconds(0);
+        keep = Mathf.Clamp(keep, 0, 100);
+        if (Input.GetKey(KeyCode.V))
+        {
+            PS.SetActive(true);
+            keep ++;
+
+        }
+        else if (Input.GetKeyUp(KeyCode.V))
+        {
+            PS.SetActive(false);
+            superDashing = true;
+        }
+        if (superDashing)
+        {
+            if (superDashTime <= 0)
+            {
+                superDashTime = startSuperDashTime;
+                superDashing = false;
+                keep = 0;
+                gameObject.GetComponent<Collider2D>().enabled = true;
+                rb.gravityScale = 3f;
+            }
+            else
+            {
+                superDashTime -= Time.deltaTime;
+                anim.SetBool("dash", true);
+                if (gameObject.transform.rotation.y < 0)
+                {
+                    rb.AddForce(Vector2.left * superDashSpeed * keep, ForceMode2D.Force);
+                    gameObject.GetComponent<Collider2D>().enabled = false;
+                    rb.gravityScale = 0f;
+                }
+                else
+                {
+                    rb.AddForce(Vector2.right * superDashSpeed * keep, ForceMode2D.Force);
+                    gameObject.GetComponent<Collider2D>().enabled = false;
+                    rb.gravityScale = 0f;
+                }
+            }
+        }
     }
 
     IEnumerator Die()
@@ -378,6 +414,7 @@ public class Player_Controller : MonoBehaviour
         if (currentHealth <= 0)
         {
             anim.SetBool("die", currentHealth <= 0);
+            rb.velocity = new Vector2(0, 0);
             this.gameObject.GetComponent<Player_Controller>().playerSpeed = 0f;
             this.gameObject.GetComponent<Player_Controller>().playerJump = 0f;
             yield return new WaitForSeconds(0.5f);
