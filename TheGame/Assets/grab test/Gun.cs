@@ -10,8 +10,9 @@ public class Gun : MonoBehaviour
     public DistanceJoint2D _distanceJoint;
     public GameObject grapple;
     public StopPlayer SP;
+    public GrabTrigger GT;
     [Header("General Settings:")]
-    [SerializeField] private int percision = 40;
+    [SerializeField] private int percision = 80;
     [Range(0, 20)] [SerializeField] private float straightenLineSpeed = 5;
 
     [Header("Rope Animation Settings:")]
@@ -27,9 +28,12 @@ public class Gun : MonoBehaviour
 
     public bool isGrappling = true;
     public bool strightLine = true;
+    public bool grab;
     // Start is called before the first frame update
     void Start()
     {
+        SP = GetComponent<StopPlayer>();
+        GT = GetComponent<GrabTrigger>();
         _lineRenderer.positionCount = percision;
         _distanceJoint.enabled = false;
         _lineRenderer.enabled = false;
@@ -41,9 +45,8 @@ public class Gun : MonoBehaviour
         _lineRenderer.positionCount = percision;
         waveSize = StartWaveSize;
         strightLine = false;
-
-        LinePointsToFirePoint();
-
+        isGrappling = false;
+        _lineRenderer.enabled = true;
         //_lineRenderer.enabled = true;
     }
 
@@ -53,25 +56,34 @@ public class Gun : MonoBehaviour
     {
         moveTime += Time.deltaTime;
         DrawRope();
-
+        if (!_lineRenderer.enabled)
+        {
+            _distanceJoint.enabled = false;
+        }
         if (Input.GetKeyDown(KeyCode.E))
         {
+
             //Vector2 mousePos = mainCamera.ScreenToWorldPoint(transform.position);
             //_lineRenderer.SetPosition(0, garpple.transform.position);
 
             //_lineRenderer.SetPosition(1, transform.position);
             _distanceJoint.connectedAnchor = grapple.transform.position;
-            _distanceJoint.enabled = true;
-            _lineRenderer.enabled = true;
+
+
             SP.enabled = true;
-            print("yes");
+            grab = true;
         }
         else if (Input.GetKeyUp(KeyCode.E))
         {
+            //LinePointsToFirePoint();
+            GT.cooldown = 1f;
             _distanceJoint.enabled = false;
-            _lineRenderer.enabled = false;
+            if (!_distanceJoint.enabled)
+            {
+                _lineRenderer.enabled = false;
+            }
+
             SP.enabled = false;
-            print("no");
             if (PC.facingright)
             {
                 PC.rb.velocity = new Vector2(1, 10);
@@ -82,9 +94,14 @@ public class Gun : MonoBehaviour
                 PC.rb.velocity = new Vector2(-1, 10);
                 PC.rb.AddForce(Vector2.left * PC.playerJump);
             }
+            if (_distanceJoint.enabled)
+            {
 
+                DrawRopeNoWaves();
+            }
             _distanceJoint.autoConfigureDistance = true;
             //strightLine = false;
+            grab = false;
         }
         //if (_distanceJoint.enabled)
         //{
@@ -108,7 +125,6 @@ public class Gun : MonoBehaviour
         for (int i = 0; i < percision; i++)
         {
             _lineRenderer.SetPosition(i, transform.position);
-            print(i);
         }
     }
 
@@ -127,23 +143,24 @@ public class Gun : MonoBehaviour
     
     void DrawRope()
     {
-        if (!strightLine)
+        if (!strightLine && !isGrappling)
         {
             if (_lineRenderer.GetPosition(percision - 1).x == grapple.transform.position.x)
             {
                 strightLine = true;
             }
-            else
+            else if (Input.GetKey(KeyCode.E))
             {
                 DrawRopeWaves();
             }
         }
         else
         {
-            if (!isGrappling && _lineRenderer.enabled == false)
+            if (!isGrappling && _lineRenderer.enabled == true)
             {
                 isGrappling = true;
             }
+
             if (waveSize > 0)
             {
                 waveSize -= Time.deltaTime * straightenLineSpeed;
@@ -154,7 +171,6 @@ public class Gun : MonoBehaviour
                 waveSize = 0;
 
                 if (_lineRenderer.positionCount != 2) { _lineRenderer.positionCount = 2; }
-
                 DrawRopeNoWaves();
             }
         }
@@ -164,5 +180,6 @@ public class Gun : MonoBehaviour
     {
         _lineRenderer.SetPosition(0, grapple.transform.position);
         _lineRenderer.SetPosition(1, transform.position);
+        _distanceJoint.enabled = true;
     }
 }

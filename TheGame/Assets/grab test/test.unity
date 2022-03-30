@@ -274,7 +274,6 @@ GameObject:
   - component: {fileID: 714610130}
   - component: {fileID: 714610129}
   - component: {fileID: 714610128}
-  - component: {fileID: 714610131}
   m_Layer: 8
   m_Name: Square
   m_TagString: Enemy
@@ -373,22 +372,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!58 &714610131
-CircleCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 714610127}
-  m_Enabled: 1
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IsTrigger: 1
-  m_UsedByEffector: 0
-  m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
-  serializedVersion: 2
-  m_Radius: 4.85
 --- !u!1 &1220278768
 GameObject:
   m_ObjectHideFlags: 0
@@ -1002,7 +985,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &2013010813
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1015,11 +998,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4dd359d1f52b6934eb05518464efab33, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  PC: {fileID: 0}
   mainCamera: {fileID: 1539434936}
   _lineRenderer: {fileID: 2013010814}
   _distanceJoint: {fileID: 2013010816}
-  garpple: {fileID: 714610127}
-  isGrabing: 0
+  grapple: {fileID: 0}
+  SP: {fileID: 0}
+  percision: 40
+  straightenLineSpeed: 5
+  ropeAnimationCurve:
+    serializedVersion: 2
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  StartWaveSize: 2
+  ropeProgressionCurve:
+    serializedVersion: 2
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  ropeProgressionSpeed: 1
+  isGrappling: 1
+  strightLine: 1
 --- !u!120 &2013010814
 LineRenderer:
   m_ObjectHideFlags: 0
@@ -1151,7 +1153,7 @@ DistanceJoint2D:
   m_Anchor: {x: 0, y: 0}
   m_ConnectedAnchor: {x: 0.13626075, y: -0.24981129}
   m_AutoConfigureDistance: 1
-  m_Distance: 2.3100605
+  m_Distance: 5.270029
   m_MaxDistanceOnly: 0
 --- !u!50 &2013010817
 Rigidbody2D:
@@ -1233,7 +1235,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2013010812}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.1651905, y: -0.449063, z: 0}
+  m_LocalPosition: {x: -5.13, y: -0.449063, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -1258,7 +1260,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!58 &2049377404
 CircleCollider2D:
   m_ObjectHideFlags: 0

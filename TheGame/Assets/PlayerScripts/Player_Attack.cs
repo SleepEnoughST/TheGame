@@ -11,11 +11,13 @@ public class Player_Attack : MonoBehaviour
     public bool isRangedAttacking;
     public float rangedAttackCooldown;
 
-    public Player_Movement PM;
+    [SerializeField]private Player_Movement PM;
+    [SerializeField]private Player_Dash PD;
     // Start is called before the first frame update
     void Start()
     {
         PM = GetComponent<Player_Movement>();
+        PD = GetComponent<Player_Dash>();
     }
 
     // Update is called once per frame
@@ -23,6 +25,7 @@ public class Player_Attack : MonoBehaviour
     {
         Attack();
         RangedAttack();
+        Check();
     }
 
     void Attack()
@@ -73,5 +76,17 @@ public class Player_Attack : MonoBehaviour
         //PM.anim.SetBool("rangedAttack", false);
         isRangedAttacking = false;
         PM.enabled = true;
+    }
+
+    void Check()
+    {
+        if (isAttacking || isRangedAttacking)
+        {
+            PM.enabled = false;
+        }
+        else
+        {
+            PM.enabled = true;
+        }
     }
 }

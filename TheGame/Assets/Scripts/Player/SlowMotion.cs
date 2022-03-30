@@ -16,6 +16,7 @@ public class SlowMotion : MonoBehaviour
         //    Time.fixedDeltaTime += Time.deltaTime;
         //    Time.fixedDeltaTime = Mathf.Clamp(Time.fixedDeltaTime, 0f, 0.02f);
         //}
+        print(Time.timeScale);
     }
 
     public void DoSlowmotion()

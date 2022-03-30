@@ -6,10 +6,29 @@ public class GrabTrigger : MonoBehaviour
 {
     public Gun gun;
     public StopPlayer SP;
+    public float cooldown;
+    public Player_Controller pc;
+
+    private void Start()
+    {
+        pc = GetComponent<Player_Controller>();
+    }
+
+    private void Update()
+    {
+        if (cooldown > 0)
+        {
+            cooldown -= Time.deltaTime;
+        }
+        if (gun.enabled)
+        {
+            pc.enabled = false;
+        }
+    }
 
     private void OnTriggerStay2D(Collider2D collision)
     {
-        if (collision.gameObject.CompareTag("Grab"))
+        if (collision.gameObject.CompareTag("Grab") && Input.GetKeyDown(KeyCode.E) && cooldown <= 0)
         {
 
             gun.enabled = true;
@@ -18,18 +37,22 @@ public class GrabTrigger : MonoBehaviour
             
             gun.GetComponent<Gun>().grapple = collision.gameObject;
         }
-    }
-
-    private void OnTriggerExit2D(Collider2D collision)
-    {
-        if (collision.gameObject.CompareTag("Grab"))
+        else if (gun.grab == false && cooldown >= 0)
         {
-
             gun.enabled = false;
-            gun.GetComponent<LineRenderer>().enabled = false;
-            gun.GetComponent<DistanceJoint2D>().enabled = false;
-            SP.enabled = false;
         }
-
     }
+
+    //private void OnTriggerExit2D(Collider2D collision)
+    //{
+    //    if (collision.gameObject.CompareTag("Grab") )
+    //    {
+
+    //        gun.enabled = false;
+    //        gun.GetComponent<LineRenderer>().enabled = false;
+    //        gun.GetComponent<DistanceJoint2D>().enabled = false;
+    //        SP.enabled = false;
+    //    }
+
+    //}
 }

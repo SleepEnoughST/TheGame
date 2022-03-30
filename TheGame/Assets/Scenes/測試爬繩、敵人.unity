@@ -11048,6 +11048,14 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 519420031}
     - target: {fileID: 2032102126615909986, guid: b65d785196f5c144b82999bd5667b5a3, type: 3}
+      propertyPath: isGrappling
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2032102126615909986, guid: b65d785196f5c144b82999bd5667b5a3, type: 3}
+      propertyPath: strightLine
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2032102126615909986, guid: b65d785196f5c144b82999bd5667b5a3, type: 3}
       propertyPath: StartWaveSize
       value: 3
       objectReference: {fileID: 0}
@@ -11307,6 +11315,18 @@ PrefabInstance:
       propertyPath: SP
       value: 
       objectReference: {fileID: 2040571286}
+    - target: {fileID: 2032102126615909996, guid: b65d785196f5c144b82999bd5667b5a3, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2032102126615909996, guid: b65d785196f5c144b82999bd5667b5a3, type: 3}
+      propertyPath: m_Distance
+      value: 3.3970575
+      objectReference: {fileID: 0}
+    - target: {fileID: 2032102126615909996, guid: b65d785196f5c144b82999bd5667b5a3, type: 3}
+      propertyPath: m_ConnectedAnchor.x
+      value: -4.6
+      objectReference: {fileID: 0}
     - target: {fileID: 2032102126615909997, guid: b65d785196f5c144b82999bd5667b5a3, type: 3}
       propertyPath: m_SortingOrder
       value: 2

@@ -8,6 +8,7 @@ public class Player_Movement : MonoBehaviour
     public float moveSpeed;
     [Header("®§¶‚∏ı≈D")]
     public float jumpForce;
+    public float airJumpForce;
     public float jumpCount;
     public float jumpTime;
     public bool isJumping;
@@ -61,6 +62,7 @@ public class Player_Movement : MonoBehaviour
     
     void Jump()
     {
+        anim.SetBool("jump", !isGrounded);
         if (isGrounded)
         {
             jumpCount = 2;
@@ -91,8 +93,9 @@ public class Player_Movement : MonoBehaviour
         {
             if (Input.GetKeyDown(KeyCode.Z))
             {
-                rb.velocity = Vector2.up * jumpForce;
+                rb.velocity = Vector2.up * airJumpForce;
                 jumpCount--;
+                anim.SetBool("jump", true);
             }
         }
         if (Input.GetKeyUp(KeyCode.Z))
@@ -106,6 +109,15 @@ public class Player_Movement : MonoBehaviour
         {
             isGrounded = true;
             rb.velocity = new Vector2(0, rb.velocity.y);
+        }
+    }
+
+    private void OnCollisionExit2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("Ground") && jumpCount == 2)
+        {
+            isGrounded = false;
+            jumpCount -= 1;
         }
     }
 }
