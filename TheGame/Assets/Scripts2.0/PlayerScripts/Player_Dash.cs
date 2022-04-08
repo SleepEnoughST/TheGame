@@ -108,7 +108,6 @@ public class Player_Dash : MonoBehaviour
             {
                 PM.enabled = false;
                 PA.enabled = false;
-                PM.rb.gravityScale = 0f;
                 PM.rb.velocity = Vector2.zero;
             }
             keep += Time.deltaTime * 3;
@@ -145,7 +144,7 @@ public class Player_Dash : MonoBehaviour
                 isSuperDashing = false;
                 keep = 0;
 
-                PM.rb.gravityScale = 5f;
+                //PM.rb.gravityScale = 5f;
             }
             else
             {
