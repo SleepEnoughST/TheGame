@@ -4,15 +4,19 @@ using UnityEngine;
 
 public class Enemy02_Attack : MonoBehaviour
 {
-    public Vector3 firePoint;
+    public GameObject player;
+    public GameObject firePoint;
     public GameObject bullet;
     public float attackCooldown;
     public bool isAttacking;
-    public GameObject player;
+
+    private Rigidbody2D rb;
+    private Animator anim;
     // Start is called before the first frame update
     void Start()
     {
-        
+        rb = GetComponent<Rigidbody2D>();
+        anim = GetComponent<Animator>();
     }
 
     // Update is called once per frame
@@ -23,6 +27,7 @@ public class Enemy02_Attack : MonoBehaviour
 
     void Attack()
     {
+
         if (attackCooldown <= 0)
             isAttacking = true;
         else
@@ -30,14 +35,23 @@ public class Enemy02_Attack : MonoBehaviour
 
         if (isAttacking)
         {
-            Instantiate(bullet, transform.position, Quaternion.identity);
-
+            anim.SetBool("attack", true);
+        }
+        else
+        {
+            anim.SetBool("attack", false);
         }
         
+    }
+
+    void Shoot()
+    {
+        //Instantiate(bullet, firePoint.transform.position, Quaternion.identity);
     }
 
     void Cooldown()
     {
 
     }
+
 }
